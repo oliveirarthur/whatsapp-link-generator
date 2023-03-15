@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD"
+        crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+        <div class="row min-vh-100 align-items-center align-content-around align-content-md-center">
+            <div class="col-12">
+                <h1>WhatsApp link creator</h1>
+            </div>
+            <div class="col-md-6">
+                <form>
+                    <div class="row">
+                        <div class="col my-1">
+                            <label for="phone">Insira o telefone com DDD</label>
+                            <input
+                                class="form-control"
+                                type="tel"
+                                name="phone"
+                                id="phone"
+                                minlength="10"
+                                maxlength="11"
+                                pattern='\d{10,11}'
+                                autofocus
+                                onkeyup="phoneChanged(event)"
+                                onpaste="parsePastedValue(event)"
+                                required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col my-1">
+                            <label for="message">Mensagem (opcional)</label>
+                            <textarea
+                                class="form-control"
+                                name="message"
+                                id="message"
+                                rows="5"
+                                onkeyup="messageChanged(event)"></textarea>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col">
+                            <button
+                                class="btn btn-primary openNewWindow"
+                                type="button"
+                                onclick="openNewWindow()">Abrir</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6 text-center result">
+                <img class="d-inline-block qrcode" height="200" src="" />
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const form = document.querySelector('form')
+        const img = document.querySelector('div.result img.qrcode')
+        const messageTextarea = document.querySelector('textarea')
+        const openNewWindowButton = document.querySelector('button.openNewWindow')
+        const phoneInput = document.querySelector('input[type=tel]')
+        const result = document.querySelector('div.result')
+
+        function toggleResult(show) {
+            if (typeof show === "undefined") {
+                // show = result.style.display === 'none'
+                show = img.src !== ''
+            }
+            // result.style.display = show ? 'block' : 'none'
+            if (!show) {
+                img.src = ''
+            }
+            openNewWindowButton.disabled = !show
+        }
+
+        function getWhatsAppURL() {
+            const url = new URL(`https://wa.me/55${phoneInput.value}`);
+            if (!!messageTextarea.value) {
+                url.searchParams.set('text', messageTextarea.value)
+            }
+            return url.toString()
+        }
+
+        function getQrCodeURL() {
+            const chl = (getWhatsAppURL());
+            const url = new URL('https://chart.googleapis.com/chart')
+            Object.entries({
+                chl,
+                chld: 'L|0',
+                choe: 'UTF-8',
+                chs: '200',
+                cht: 'qr',
+            })
+            .filter(([key, value]) => !!value)
+            .forEach(([key, value]) => url.searchParams.set(key, value))
+            return url.toString()
+        }
+
+        function updateResult() {
+            if (!phoneInput.checkValidity()) {
+                toggleResult(false)
+                return
+            }
+            img.src = getQrCodeURL()
+            toggleResult(true)
+        }
+
+        function phoneChanged() {
+            phoneInput.value = phoneInput.value.replace(/\D+/g, '')
+
+            if (phoneInput.dataset.previousValue === phoneInput.value) {
+                return
+            }
+            phoneInput.dataset.previousValue = phoneInput.value
+            updateResult()
+        }
+
+        function messageChanged() {
+            if (messageTextarea.dataset.previousValue === messageTextarea.value) {
+                return
+            }
+            messageTextarea.dataset.previousValue = messageTextarea.value
+            updateResult()
+        }
+
+        function openNewWindow() {
+            const newWindow = window.open(getWhatsAppURL(), '_blank', 'popup,noopener,noreferrer,width=800,height=600');
+        }
+
+        function parsePastedValue(event) {
+            phoneInput.value = event.clipboardData.getData('Text').replace(/\D+/g, '')
+        }
+        phoneChanged()
+    </script>
+</body>
+</html>
