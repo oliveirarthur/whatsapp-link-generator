@@ -173,7 +173,10 @@
         }
 
         function phoneChanged() {
-            phoneInput.value = Number(phoneInput.value.replace(/[^0-9+]/g, ''))
+            const parsedValue = Number(phoneInput.value.replace(/[^0-9+]/g, ''));
+            if (parsedValue !== 0) {
+                phoneInput.value = parsedValue;
+            }
 
             if (phoneInput.dataset.previousValue === phoneInput.value) {
                 return
