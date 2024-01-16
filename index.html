@@ -173,7 +173,7 @@
         }
 
         function phoneChanged() {
-            phoneInput.value = phoneInput.value.replace(/[^0-9+]/g, '')
+            phoneInput.value = Number(phoneInput.value.replace(/[^0-9+]/g, ''))
 
             if (phoneInput.dataset.previousValue === phoneInput.value) {
                 return
